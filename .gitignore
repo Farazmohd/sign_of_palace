@@ -15,4 +15,7 @@ uploads/
 static/uploads/*
 config.py
 sign_language_model_augmented.keras
+sign_language_model_augmented.h5
 class_names.pkl
+train_augmented/
+dataset/
