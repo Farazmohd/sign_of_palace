@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}About the Project | Signs of the Palace{% endblock %}
+
+{% block content %}
+<section class="container" style="padding: 100px 0;">
+    <div class="glass-card">
+        <h1>About the Project</h1>
+        <p style="font-size: 1.1rem; margin-top: 20px;">
+            Signs of the Palace is an innovative research initiative aimed at leveraging artificial intelligence to preserve and interpret the unique sign language vocabulary associated with the cultural heritage of Mysore.
+        </p>
+        
+        <div style="margin-top: 40px;">
+            <h3>The Technology</h3>
+            <p>We utilize a combination of Convolutional Neural Networks (CNN) for spatial feature extraction from video frames and Long Short-Term Memory (LSTM) networks for temporal sequence understanding. This allows our system to recognize complex gestures that evolve over time.</p>
+            
+            <br>
+            <h3>Dataset</h3>
+            <p>Our dataset consists of over 2,000 video clips across 29 distinct classes, capturing the essence of palace life, architecture, and rituals. Each gesture is recorded under various lighting conditions and angles to ensure model robustness.</p>
+            
+            <br>
+            <h3>Mission</h3>
+            <p>To bridge the gap between technology and tradition, making cultural heritage accessible to all, including the hearing-impaired community and history enthusiasts.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

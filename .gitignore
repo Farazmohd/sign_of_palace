@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+bin/
+lib/
+include/
+
+# Project specific
+uploads/
+static/uploads/*
+config.py
+sign_language_model_augmented.keras
+class_names.pkl

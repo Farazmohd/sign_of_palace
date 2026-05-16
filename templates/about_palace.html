@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %}About the Palace | Signs of the Palace{% endblock %}
+
+{% block content %}
+<section class="container" style="padding: 100px 0;">
+    <div class="glass-card">
+        <h1>The Majestic Mysore Palace</h1>
+        <p style="font-size: 1.1rem; margin-top: 20px;">
+            The Mysore Palace, also known as the Amba Vilas Palace, is a historical palace and a royal residence at Mysore in the Indian State of Karnataka. It is the official residence of the Wadiyar dynasty and the seat of the Kingdom of Mysore. The palace is in the centre of Mysore, and faces the Chamundi Hills eastward. 
+        </p>
+        <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <img src="{{ url_for('static', filename='mysore_palace.png') }}" alt="Mysore Palace" style="width: 100%; border-radius: 15px; box-shadow: var(--shadow);">
+            <div>
+                <h3>Indo-Saracenic Architecture</h3>
+                <p>The architectural style of domes of the palace is commonly described as Indo-Saracenic, with blends of the Hindu, Mughal, Rajput, and Gothic styles. It is a three-story stone structure with marble domes, and has a 145-foot five-story tower.</p>
+                <br>
+                <h3>A Cultural Landmark</h3>
+                <p>Mysore is commonly described as the City of Palaces, and there are about seven palaces including this one; however, Mysore Palace refers specifically to the one within the Old Fort.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

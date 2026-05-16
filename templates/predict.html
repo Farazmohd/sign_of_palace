@@ -1,0 +1,359 @@
+{% extends "layout.html" %}
+
+{% block title %}Predict Sign | Signs of the Palace{% endblock %}
+
+{% block head %}
+<style>
+    /* Fixed Layout for Prediction Page */
+    .prediction-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .option-card {
+        background: rgba(255, 255, 255, 0.5);
+        border: 2px dashed var(--primary-color);
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .option-card:hover {
+        background: rgba(212, 175, 55, 0.1);
+        transform: translateY(-5px);
+    }
+
+    .option-card i {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        margin-bottom: 15px;
+    }
+
+    /* Camera Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        max-width: 600px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    video#cameraPreview {
+        width: 100%;
+        border-radius: 10px;
+        background: #000;
+        margin-bottom: 20px;
+    }
+
+    .camera-controls {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .record-btn {
+        background: #ff4444;
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 4px solid #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .record-btn.recording {
+        border-radius: 5px;
+        animation: pulse 1s infinite;
+    }
+
+    #countdownOverlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 5rem;
+        color: white;
+        font-weight: bold;
+        text-shadow: 0 0 20px rgba(0,0,0,0.8);
+        display: none;
+        z-index: 100;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="predict-container">
+    <div class="container">
+        <div class="glass-card" style="position: relative; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Gesture Prediction</h2>
+                {% if prediction %}
+                <button onclick="window.location.href='/predict'" class="btn-royal" style="padding: 8px 20px; font-size: 0.9rem; background: #666;">
+                    <i class="fas fa-redo"></i> Start Over
+                </button>
+                {% endif %}
+            </div>
+            
+            <p style="text-align: center; margin-bottom: 40px; color: #666;">Choose between uploading a video or recording a new one.</p>
+            
+            <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                <div class="spinner"></div>
+                <p id="loadingText">AI is analyzing the gesture...</p>
+            </div>
+
+            {% if error %}
+                <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                </div>
+            {% endif %}
+
+            <div class="prediction-options">
+                <div class="option-card" onclick="document.getElementById('videoFile').click()">
+                    <i class="fas fa-file-video"></i>
+                    <h3>Upload from Gallery</h3>
+                    <p>Select a video from your device</p>
+                </div>
+                <div class="option-card" id="openCameraBtn">
+                    <i class="fas fa-camera"></i>
+                    <h3>Record from Camera</h3>
+                    <p>Record a 4-second gesture</p>
+                </div>
+            </div>
+
+            <!-- Hidden Form for Gallery Upload -->
+            <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data" id="uploadForm" style="display: none;">
+                <input type="file" name="video" id="videoFile" accept="video/*" onchange="submitGalleryForm()">
+            </form>
+
+            <!-- Hidden Form for Camera Recording -->
+            <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data" id="cameraForm" style="display: none;">
+                <input type="file" name="video" id="cameraBlobInput">
+            </form>
+
+            {% if prediction %}
+            <div class="result-section">
+                <div class="result-image" style="position: relative; background: #000; border-radius: 15px; overflow: hidden; box-shadow: var(--shadow);">
+                    <!-- Animated Frame Sequence -->
+                    <img id="animatedFrames" src="{{ url_for('static', filename='uploads/' + frame_files[0]) }}" 
+                         style="width: 100%; height: auto; display: block;" 
+                         alt="Gesture Animation">
+                    
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.5); color: white; font-size: 0.8rem; padding: 5px; text-align: center;">
+                        <i class="fas fa-sync fa-spin"></i> AI Analyzing Sequence
+                    </div>
+                </div>
+                <div class="result-details">
+                    <span style="text-transform: uppercase; letter-spacing: 2px; color: var(--primary-color); font-weight: 600;">Prediction Result</span>
+                    <h2>{{ prediction }}</h2>
+                    <div class="description-box">
+                        {{ description }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Camera Recording Modal -->
+<div id="cameraModal" class="modal">
+    <div class="modal-content">
+        <div id="countdownOverlay"></div>
+        <h3>Record Gesture</h3>
+        <p style="color: #666; margin-bottom: 15px;">Get ready! The camera will record for 4 seconds.</p>
+        <video id="cameraPreview" autoplay muted playsinline></video>
+        <div class="camera-controls">
+            <div id="recordBtn" class="record-btn" title="Start Recording">
+                <i class="fas fa-circle"></i>
+            </div>
+            <button id="closeCameraBtn" class="btn-royal" style="background: #666;">Cancel</button>
+        </div>
+        <p id="recordTimer" style="margin-top: 10px; font-weight: bold; color: #ff4444; display: none;">REC: 0s</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingText = document.getElementById('loadingText');
+
+    // Image Animation Loop Logic
+    window.addEventListener('load', () => {
+        const animatedImg = document.getElementById('animatedFrames');
+        if (animatedImg) {
+            const frames = [
+                {% if frame_files %}
+                    {% for frame in frame_files %}
+                    "{{ url_for('static', filename='uploads/' + frame) }}",
+                    {% endfor %}
+                {% endif %}
+            ];
+            
+            if (frames.length > 0) {
+                let currentFrame = 0;
+                setInterval(() => {
+                    currentFrame = (currentFrame + 1) % frames.length;
+                    animatedImg.src = frames[currentFrame];
+                }, 250); // 4 frames per second
+            }
+        }
+    });
+
+    function submitGalleryForm() {
+        const input = document.getElementById('videoFile');
+        if (input.files && input.files[0]) {
+            loadingText.innerText = "Uploading and analyzing gallery video...";
+            loadingOverlay.style.display = "flex";
+            document.getElementById('uploadForm').submit();
+        }
+    }
+
+    // Camera Recording Logic
+    const openCameraBtn = document.getElementById('openCameraBtn');
+    const cameraModal = document.getElementById('cameraModal');
+    const closeCameraBtn = document.getElementById('closeCameraBtn');
+    const cameraPreview = document.getElementById('cameraPreview');
+    const recordBtn = document.getElementById('recordBtn');
+    const recordTimer = document.getElementById('recordTimer');
+    const cameraForm = document.getElementById('cameraForm');
+    const cameraBlobInput = document.getElementById('cameraBlobInput');
+    const countdownOverlay = document.getElementById('countdownOverlay');
+
+    let mediaRecorder;
+    let recordedChunks = [];
+    let stream;
+    let startTime;
+    let timerInterval;
+
+    openCameraBtn.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { width: 1280, height: 720 }, 
+                audio: false 
+            });
+            cameraPreview.srcObject = stream;
+            cameraModal.style.display = "flex";
+        } catch (err) {
+            alert("Could not access camera: " + err.message);
+        }
+    });
+
+    closeCameraBtn.addEventListener('click', () => {
+        stopStream();
+        cameraModal.style.display = "none";
+    });
+
+    function stopStream() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    recordBtn.addEventListener('click', () => {
+        if (!mediaRecorder || mediaRecorder.state === "inactive") {
+            startCountdown();
+        }
+    });
+
+    function startCountdown() {
+        let count = 3;
+        countdownOverlay.innerText = count;
+        countdownOverlay.style.display = "block";
+        recordBtn.style.opacity = "0.5";
+        recordBtn.style.pointerEvents = "none";
+
+        const interval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownOverlay.innerText = count;
+            } else {
+                clearInterval(interval);
+                countdownOverlay.style.display = "none";
+                startRecording();
+            }
+        }, 1000);
+    }
+
+    function startRecording() {
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8' });
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const file = new File([blob], "recorded_video.webm", { type: 'video/webm' });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            cameraBlobInput.files = dataTransfer.files;
+
+            loadingText.innerText = "Processing 4-second capture...";
+            loadingOverlay.style.display = "flex";
+            cameraModal.style.display = "none";
+            stopStream();
+            cameraForm.submit();
+        };
+
+        mediaRecorder.start();
+        recordBtn.classList.add('recording');
+        recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        recordBtn.style.opacity = "1";
+        recordBtn.style.pointerEvents = "auto";
+        recordTimer.style.display = "block";
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 100);
+
+        // Record for exactly 4 seconds
+        setTimeout(() => {
+            if (mediaRecorder.state === "recording") stopRecording();
+        }, 4000);
+    }
+
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            recordBtn.classList.remove('recording');
+            clearInterval(timerInterval);
+        }
+    }
+
+    function updateTimer() {
+        const elapsed = (Date.now() - startTime) / 1000;
+        recordTimer.innerText = `REC: ${elapsed.toFixed(1)}s`;
+    }
+</script>
+{% endblock %}

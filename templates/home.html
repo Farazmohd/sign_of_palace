@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}Welcome | Signs of the Palace{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Unveil the Secrets of Mysore</h1>
+        <p>A bridge between ancient heritage and modern artificial intelligence. Recognize palace gestures and objects with state-of-the-art Deep Learning.</p>
+        <div class="cta-group">
+            <a href="{{ url_for('predict') }}" class="btn-royal">Start Predicting</a>
+            <a href="{{ url_for('about_palace') }}" class="btn-royal" style="background: transparent; border: 2px solid var(--primary-color);">Learn More</a>
+        </div>
+    </div>
+</section>
+
+<section class="features container" style="padding: 100px 0;">
+    <h2 style="text-align: center; margin-bottom: 50px;">Why Signs of the Palace?</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;">
+        <div class="glass-card" style="text-align: center;">
+            <i class="fas fa-history" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+            <h3>Heritage Preservation</h3>
+            <p>Documenting and preserving the unique sign language related to the Mysore Palace architecture and history.</p>
+        </div>
+        <div class="glass-card" style="text-align: center;">
+            <i class="fas fa-brain" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+            <h3>AI Powered</h3>
+            <p>Using CNN and LSTM networks to achieve high accuracy in sequence classification from video clips.</p>
+        </div>
+        <div class="glass-card" style="text-align: center;">
+            <i class="fas fa-universal-access" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+            <h3>Accessibility</h3>
+            <p>Helping researchers and visitors understand palace-related sign language gestures with ease.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

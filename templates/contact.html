@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block title %}Contact Us | Signs of the Palace{% endblock %}
+
+{% block content %}
+<section class="container" style="padding: 100px 0;">
+    <div class="glass-card" style="max-width: 600px; margin: 0 auto;">
+        <h1 style="text-align: center;">Get in Touch</h1>
+        <p style="text-align: center; margin-bottom: 40px;">Have questions about the project or want to collaborate?</p>
+        
+        <div id="statusMessage"></div>
+
+        <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+            <!-- IMPORTANT: Enter your Access Key from web3forms.com here -->
+            <input type="hidden" name="access_key" value="690ec6d4-9b08-43fe-94e8-8d990d6c7b80">
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Name</label>
+                <input type="text" name="name" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;" required>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Email</label>
+                <input type="email" name="email" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;" required>
+            </div>
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; margin-bottom: 5px;">Message</label>
+                <textarea name="message" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; height: 150px;" required></textarea>
+            </div>
+            
+            <!-- Optional Settings -->
+            <input type="hidden" name="subject" value="New Message from Signs of the Palace">
+            <input type="hidden" name="from_name" value="Palace Heritage App">
+            
+            <button type="submit" id="submitBtn" class="btn-royal" style="width: 100%;">Send Message</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const form = document.getElementById("contactForm");
+    const status = document.getElementById("statusMessage");
+    const btn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        // Ensure user has replaced the key
+        if (form.access_key.value === "YOUR_ACCESS_KEY_HERE") {
+            alert("Please enter your Web3Forms Access Key in the code first!");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Sending...";
+        
+        const json = JSON.stringify(Object.fromEntries(new FormData(form)));
+
+        fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: json
+        })
+        .then(async (response) => {
+            let json = await response.json();
+            if (response.status == 200) {
+                status.innerHTML = `
+                    <div style="background: #e8f5e9; color: #2e7d32; padding: 20px; border-radius: 10px; margin-bottom: 30px; text-align: center;">
+                        <i class="fas fa-check-circle"></i> Success! Your message has been sent.
+                    </div>`;
+                form.reset();
+            } else {
+                status.innerHTML = `
+                    <div style="background: #ffebee; color: #c62828; padding: 20px; border-radius: 10px; margin-bottom: 30px; text-align: center;">
+                        <i class="fas fa-exclamation-circle"></i> Error: ${json.message}
+                    </div>`;
+            }
+        })
+        .catch(error => {
+            status.innerHTML = `
+                <div style="background: #ffebee; color: #c62828; padding: 20px; border-radius: 10px; margin-bottom: 30px; text-align: center;">
+                    <i class="fas fa-exclamation-circle"></i> Connection Error. Please try again later.
+                </div>`;
+        })
+        .then(function() {
+            btn.disabled = false;
+            btn.innerText = "Send Message";
+        });
+    });
+</script>
+{% endblock %}
